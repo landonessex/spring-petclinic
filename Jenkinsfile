@@ -1,13 +1,18 @@
- pipeline {
+pipeline {
     agent any
     
     triggers {
-        cron('H/10 * * * 1') 
+        cron('H/10 * * * 1')
     }
 
     tools {
         jdk 'JDK17'
         maven 'Maven3'
+    }
+
+    environment {
+        JAVA_HOME = tool 'JDK17'
+        PATH = "${JAVA_HOME}/bin:${PATH}"
     }
 
     stages {
@@ -18,15 +23,18 @@
             }
         }
 
-        stage('Build and Test') {
+        stage('Build') {
             steps {
-                sh 'mvn clean package'
+                sh '''
+                    chmod +x mvnw
+                    ./mvnw clean package -DskipTests
+                '''
             }
         }
 
-        stage('Code Coverage') {
+        stage('Test with Coverage') {
             steps {
-                sh 'mvn verify org.jacoco:jacoco-maven-plugin:prepare-agent'
+                sh './mvnw verify'
             }
             post {
                 success {
@@ -37,6 +45,12 @@
                         exclusionPattern: 'src/test*'
                     )
                 }
+            }
+        }
+
+        stage('Archive Artifact') {
+            steps {
+                archiveArtifacts artifacts: 'target/*.jar', followSymlinks: false
             }
         }
     }
