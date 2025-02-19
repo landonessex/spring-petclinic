@@ -20,13 +20,13 @@
 
         stage('Build and Test') {
             steps {
-                bat 'mvn clean package'
+                sh 'mvn clean package'
             }
         }
 
         stage('Code Coverage') {
             steps {
-                bat 'mvn verify org.jacoco:jacoco-maven-plugin:prepare-agent'
+                sh 'mvn verify org.jacoco:jacoco-maven-plugin:prepare-agent'
             }
             post {
                 success {
